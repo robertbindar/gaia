@@ -116,20 +116,21 @@ marionette('notification tests', function() {
   var screenStatusIsOn = screenStatusIs.bind(null, true);
   var screenStatusIsOff = screenStatusIs.bind(null, false);
 
-  // skipping this test until we can figure out why we see intermittent oranges
-  // see also: bug 916730
-  test.skip('email notification should not wake screen', function() {
+  test('email notification should not wake screen', function() {
     client.switchToFrame();
+
+    client.executeScript(fs.readFileSync(
+      SHARED_PATH + '/mock_notification_utils.js', 'utf8'));
+
     client.executeScript(function() {
       window.wrappedJSObject.ScreenManager.turnScreenOff(true);
     });
-    client.waitFor(screenStatusIsOff);
+
     client.apps.launch(urls.email);
     client.apps.switchToApp(urls.email);
-    var notify =
-          new NotificationTest(client,
-                               '123', 'test title', 'test body');
+    var notify = new NotificationTest(client, '123', 'test', 'test');
     client.switchToFrame();
+
     var screenOn = screenStatusIsOn();
     assert.equal(screenOn, false, 'Screen should be off');
   });
@@ -137,7 +138,7 @@ marionette('notification tests', function() {
   test('email notif should not vibrate the phone while asleep', function() {
     client.switchToFrame();
     client.executeScript(fs.readFileSync(
-      SHARED_PATH + '/mock_navigator_vibrate.js', 'utf8'));
+      SHARED_PATH + '/mock_notification_utils.js', 'utf8'));
 
     // Mock turning the screen off
     client.executeScript(function() {
@@ -158,7 +159,7 @@ marionette('notification tests', function() {
   test('calendar notif should vibrate the phone when waking up', function() {
     client.switchToFrame();
     client.executeScript(fs.readFileSync(
-      SHARED_PATH + '/mock_navigator_vibrate.js', 'utf8'));
+      SHARED_PATH + '/mock_notification_utils.js', 'utf8'));
 
     // Mock screen off
     client.executeScript(function() {
